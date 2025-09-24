@@ -47,7 +47,7 @@ jobs:
         id: run-code-analyzer
         uses: forcedotcom/run-code-analyzer@v2.4.0
         with:
-          run-arguments: '--target "./force-app" --view detail --output-file sfca_results.json'
+          run-arguments: '--target "./" --view detail --output-file sfca_results.json'
           results-artifact-name: salesforce-code-analyzer-results
 
       - name: Run Salesforce Code Analyzer Scan
