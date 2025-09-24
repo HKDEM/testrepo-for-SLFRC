@@ -54,6 +54,39 @@ jobs:
         run: |
           sf code-analyzer run --output-file sfca_results.sarif
 
+      - name: Patch SARIF for GitHub Security tab
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = 'sfca_results.sarif';
+            const sarif = JSON.parse(fs.readFileSync(path, 'utf8'));
+
+            // Iterate through all runs
+            sarif.runs.forEach(run => {
+              // Rename tool
+              run.tool.driver.name = 'Salesforce Code Analyzer';
+              
+              // Add automationDetails.id if missing
+              if (!run.automationDetails) run.automationDetails = {};
+              if (!run.automationDetails.id) run.automationDetails.id = 'salesforce-code-analyzer-run';
+
+              // Collect scanned files from results
+              const filesSet = new Set();
+              (run.results || []).forEach(r => {
+                const loc = r.locations?.[0]?.physicalLocation?.artifactLocation?.uri;
+                if (loc) filesSet.add(loc);
+              });
+
+              // Add files array if missing
+              run.files = [];
+              filesSet.forEach(f => {
+                run.files.push({uri: f});
+              });
+            });
+
+            fs.writeFileSync(path, JSON.stringify(sarif, null, 2));
+          "
+
       - name: Upload SARIF file to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
