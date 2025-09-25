@@ -1,0 +1,15 @@
+<apex:page controller="InsecureSecurityTest">
+    <h1>Insecure VF Page</h1>
+
+    <!-- VULNERABLE: inline script with user-provided param inserted directly -> XSS -->
+    <script>
+        // imagine 'name' came from URL parameter and is not escaped
+        var unsafeName = '{!JSENCODE($CurrentPage.parameters.name)}';
+        // But if developer used {!$CurrentPage.parameters.name} without JSENCODE, it's XSS-prone
+        document.write('<div>Welcome, ' + unsafeName + '</div>');
+    </script>
+
+    <!-- VULNERABLE: disabling CSP or using unsafe-inline resources -->
+    <script src="http://insecure-cdn.example.com/malicious.js"></script>
+</apex:page>
+
